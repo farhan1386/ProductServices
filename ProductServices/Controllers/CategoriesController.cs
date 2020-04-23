@@ -10,51 +10,53 @@ namespace ProductServices.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProductsController : ControllerBase
+    public class CategoriesController : ControllerBase
     {
         private readonly ApplicationDbContext db;
 
-        public ProductsController(ApplicationDbContext context)
+        public CategoriesController(ApplicationDbContext context)
         {
             db = context;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
+        public async Task<ActionResult<IEnumerable<Category>>> GetCategories()
         {
-            return await db.Products.Include(c => c.Category).ToListAsync();
+            return await db.Categories.ToListAsync();
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Product>> GetProductById(int id)
+        public async Task<ActionResult<Category>> GetCategoryById(int id)
         {
-            var product = await db.Products.FindAsync(id);
+            var category = await db.Categories.FindAsync(id);
 
-            if (product == null)
+            if (category == null)
             {
                 return NotFound();
             }
 
-            return product;
+            return category;
         }
 
         [HttpPost]
-        public async Task<ActionResult<Product>> New(Product product)
+        public async Task<ActionResult<Category>> New(Category category)
         {
-            db.Products.Add(product);
+            db.Categories.Add(category);
             await db.SaveChangesAsync();
-            return CreatedAtAction("GetProductById", new { id = product.ProductId }, product);
+
+            return CreatedAtAction("GetCategories", new { id = category.Id }, category);
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<Product>> Edit(int id, Product product)
+        public async Task<ActionResult<Category>> Edit(int id, Category category)
         {
-            if (id != product.ProductId)
+            if (id != category.Id)
             {
                 return BadRequest();
             }
 
-            db.Entry(product).State = EntityState.Modified;
+            db.Entry(category).State = EntityState.Modified;
+
 
             try
             {
@@ -62,7 +64,7 @@ namespace ProductServices.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!ProductExists(id))
+                if (!CategoryExists(id))
                 {
                     return NotFound();
                 }
@@ -71,27 +73,25 @@ namespace ProductServices.Controllers
                     throw;
                 }
             }
-
             return NoContent();
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult<Product>> DeleteProduct(int id)
+        public async Task<ActionResult<Category>> DeleteCategory(int id)
         {
-            var product = await db.Products.FindAsync(id);
+            var category = await db.Categories.FindAsync(id);
 
-            if (product == null)
+            if (category == null)
             {
                 return NotFound();
             }
-            db.Products.Remove(product);
+            db.Categories.Remove(category);
             await db.SaveChangesAsync();
-            return product;
+            return category;
         }
-
-        private bool ProductExists(int id)
+        private bool CategoryExists(int id)
         {
-            return db.Products.Any(p => p.ProductId == id);
+            return db.Categories.Any(c => c.Id == id);
         }
     }
 }
